@@ -7,10 +7,16 @@ float sphere(vec3 p, float r) {
     return length(p) - r;
 }
 
+float sdPlane(vec3 p, vec4 n) {
+  // n must be normalized
+  return dot(p, n.xyz) + n.w;
+}
+
 float scene(vec3 p) {
     float s1 = sphere(p, 1.) + sinusoidBumps(p, 0.03);
     float s2 = sphere(p + vec3(5.,0.,20.), 1.) + sinusoidBumps(p, 0.03);
     float s3 = sphere(p - vec3(5.,0.,20.), 1.);
+    // float pl = sdPlane(p, normalize(vec4(0.,1.,0.,1.)));
     return min(s1, min(s2, s3));
 }
 

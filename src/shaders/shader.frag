@@ -15,8 +15,6 @@ const float EPSILON = 0.0001;
 #pragma glslify: march = require('./march', scene = scene, steps = MAX_MARCHING_STEPS, epsilon = EPSILON)
 
 
-
-
 vec3 rayDirection(float fov, vec2 size, vec2 coord) {
     vec2 xy = coord - size / 2.0;
     float z = size.y / tan(radians(fov) / 2.0);

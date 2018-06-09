@@ -1,6 +1,7 @@
 const mat4 = require('gl-mat4')
 const vec3 = require('gl-vec3')
 const quat = require('gl-quat')
+const math = require('./math')
 const C = require('./consts')
 
 function CameraControl(opts) {
@@ -32,7 +33,6 @@ CameraControl.prototype.update = function(dt) {
   let accS = (this.movementSpeed / 1000) * dt
   let accR = (this.rotationSpeed / 1000) * dt
 
-  let qM = quat.create()
   let tM = vec3.create()
   let rM = vec3.create()
 
@@ -59,8 +59,10 @@ CameraControl.prototype.update = function(dt) {
 
   mat4.translate(this.worldMatrix, this.worldMatrix, this.movementVel)
 
+  let qM = quat.create()
   let rotation = mat4.create()
-  mat4.fromQuat(rotation, quatRotate(qM, this.rotationVel))
+
+  mat4.fromQuat(rotation, math.quatRotate(qM, this.rotationVel))
   mat4.multiply(this.worldMatrix, this.worldMatrix, rotation)
   mat4.multiply(this.displayMatrix, this.viewMatrix, this.worldMatrix)
 }
@@ -71,15 +73,4 @@ CameraControl.prototype.view = function() {
 
 CameraControl.prototype.position = function() {
   return [-this.displayMatrix[12],-this.displayMatrix[13],-this.displayMatrix[14]]
-}
-
-function quatRotate(q, v) {
-  quat.rotateX(q, q, radians(v[0]))
-  quat.rotateY(q, q, radians(v[1]))
-  quat.rotateZ(q, q, radians(v[2]))
-  return q
-}
-
-function radians(deg) {
-  return deg * Math.PI / 180
 }

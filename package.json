@@ -38,7 +38,9 @@
     "vkey": "^1.0.1",
     "watchify": "^3.11.0"
   },
-  "dependencies": {},
+  "dependencies": {
+    "chokidar": "^2.0.3"
+  },
   "browserify": {
     "transform": [
       "glslify"

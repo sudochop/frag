@@ -1,5 +1,7 @@
 // Modules to control application life and create native browser window
-const {app, BrowserWindow} = require('electron')
+const {app, BrowserWindow, ipcMain} = require('electron')
+const chokidar = require('chokidar')
+const glslify  = require('glslify')
 
 // Keep a global reference of the window object, if you don't, the window will
 // be closed automatically when the JavaScript object is garbage collected.
@@ -9,12 +11,13 @@ function createWindow () {
   // Create the browser window.
   mainWindow = new BrowserWindow({width: 800, height: 600})
   mainWindow.maximize()
+  const watcher = chokidar.watch('./src/shaders')
 
   // and load the index.html of the app.
   mainWindow.loadFile('index.html')
 
   // Open the DevTools.
-  // mainWindow.webContents.openDevTools()
+  mainWindow.webContents.openDevTools()
 
   // Emitted when the window is closed.
   mainWindow.on('closed', function () {
@@ -22,6 +25,19 @@ function createWindow () {
     // in an array if your app supports multi windows, this is the time
     // when you should delete the corresponding element.
     mainWindow = null
+  })
+
+  mainWindow.webContents.on('did-finish-load', () => {
+    
+    watcher.on('change', (path, stats) => {
+      if (stats) {
+        mainWindow.webContents.send('change.shaders', {
+          vert: glslify('./src/shaders/shader.vert'),
+          frag: glslify('./src/shaders/shader.frag')
+        })
+      }
+    })
+
   })
 }
 

@@ -1,3 +1,5 @@
+const { ipcRenderer } = window.require('electron');
+
 const _             = require('lodash')
 const glslify       = require('glslify')
 const glShader      = require('gl-shader')
@@ -59,6 +61,11 @@ const camera = cameraControl({
 onWindowResize()
 window.addEventListener('resize', onWindowResize)
 
+ipcRenderer.on('change.shaders', (event, message) => {
+  shader.update(message.vert, message.frag)
+  console.info('shaders updated')
+})
+
 
 // Rendering loop /////////////////////////////////////////////////////////////
 
@@ -99,9 +106,6 @@ function render() {
   fpsTime += elapsedTime;
   if(fpsTime>=1.0){
     fpsTime -= 1.0;
-    // console.clear()
-    // console.log(fps)
-    
     // document.getElementById('fps').innerHTML = fps
     fps = 0;
   }
