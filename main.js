@@ -2,6 +2,7 @@
 const {app, BrowserWindow, ipcMain} = require('electron')
 const chokidar = require('chokidar')
 const glslify  = require('glslify')
+const _ = require('lodash')
 
 // Keep a global reference of the window object, if you don't, the window will
 // be closed automatically when the JavaScript object is garbage collected.
@@ -27,18 +28,21 @@ function createWindow () {
     mainWindow = null
   })
 
+  let loaded = false
   mainWindow.webContents.on('did-finish-load', () => {
-    
-    watcher.on('change', (path, stats) => {
-      if (stats) {
-        mainWindow.webContents.send('change.shaders', {
-          vert: glslify('./src/shaders/shader.vert'),
-          frag: glslify('./src/shaders/shader.frag')
-        })
-      }
-    })
-
+    loaded = true
   })
+
+  watcher.on('change', (path, stats) => {
+    if (stats && loaded) {
+      mainWindow.webContents.send('change.shaders', {
+        vert: glslify('./src/shaders/shader.vert'),
+        frag: glslify('./src/shaders/shader.frag'),
+        depth: glslify('./src/shaders/depth.frag')
+      })
+    }
+  })
+
 }
 
 // This method will be called when Electron has finished

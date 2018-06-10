@@ -17,6 +17,7 @@ function CameraControl(opts) {
   this.worldMatrix = mat4.create()
   this.viewMatrix = mat4.create()
   this.displayMatrix = mat4.create()
+  this.dampen = 0
 
   mat4.lookAt(
     this.viewMatrix,
@@ -30,7 +31,7 @@ module.exports = CameraControl
 
 CameraControl.prototype.update = function(dt) {
 
-  let accS = (this.movementSpeed / 1000) * dt
+  let accS = (this.movementSpeed / 1000) * this.dampen * dt
   let accR = (this.rotationSpeed / 1000) * dt
 
   let tM = vec3.create()
