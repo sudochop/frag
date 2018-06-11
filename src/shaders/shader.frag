@@ -51,20 +51,24 @@ void main() {
 
     vec3 dist = march(iCamPos, rd.xyz, MIN_DIST, MAX_DIST);
 
+    vec3 c = vec3(0.,0.,0.);
+
     if (dist.y == -1.) {
-        gl_FragColor = vec4(0.0, 0.0, 0.0, 1.0);
+        gl_FragColor = vec4(c, 1.);
         return;
     }
 
     vec3 p = iCamPos + dist.x * rd.xyz;
 
     if (dist.y == 0.) {
-        p = estimateNormal(p);
-        p = mix(p, vec3(1.), sqrt(dist.x/MAX_DIST));
-        gl_FragColor = vec4(p, 1.);
-        return;
+        vec3 norm = estimateNormal(p);
+        c = norm;
+    } else {
+        c = vec3(1.);
     }
 
-    gl_FragColor = vec4(1.);
+    // c = mix(c, vec3(0.), sqrt(dist.x/MAX_DIST));
+    
+    gl_FragColor = vec4(c, 1.);
    
 }

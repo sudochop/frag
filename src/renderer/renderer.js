@@ -13,24 +13,46 @@ const mousePosition = require('mouse-position')
 const cameraControl = require('./camera-control')
 
 
-let quality = window.devicePixelRatio
-window.resize = (q) => {
-  quality = q || window.devicePixelRatio
+
+
+let quality = window.devicePixelRatio || 1
+
+
+
+const $canvas = document.getElementById('canvas')
+const mouse = mousePosition($canvas)
+
+
+$quality = document.getElementById('quality')
+$qualityLock = document.getElementById('quality-lock')
+
+$quality.addEventListener('input', function() {
+  handleQualityChange($qualityLock.checked)
+}, false)
+
+$qualityLock.addEventListener('change', function() {
+  handleQualityChange(this.checked)
+}, false)
+
+function handleQualityChange(lock) {
+  if (lock) {
+    quality = window.devicePixelRatio || 1
+  } else {
+    quality = $quality.value == 0 ? 0.1 : $quality.value
+  }
   onWindowResize()
 }
 
 
-const $canvas = document.getElementById("canvas")
-const mouse = mousePosition($canvas)
 
-const gl = $canvas.getContext('webgl')
-gl.getExtension('OES_standard_derivatives')
-
-onWindowResize()
 
 
 // OpenGL bootstrap ///////////////////////////////////////////////////////////
 
+
+const gl = $canvas.getContext('webgl')
+gl.getExtension('OES_standard_derivatives')
+handleQualityChange($qualityLock.checked)
 
 const shader = glShader(gl,
   glslify('../shaders/shader.vert'),
@@ -120,6 +142,7 @@ let iTime = 0.0
 let fpsTime = 0.0
 let fps = 0.0
 let frameTime = Date.now()
+let depth = new Uint8Array(1 * 1 * 4);
 
 render()
 
@@ -131,15 +154,13 @@ function render() {
 
   camera.update(elapsedTime)
   
-  let data = distancePass()
-
+  distancePass()
   renderPass()
 
-  let d = map(data[0]*data[0], 0, 255, 0.08, 1)
+  // Dampen camera by distance to nearest point
+  let d = map(depth[0]*depth[0], 0, 255, 0.08, 1)
   d = clamp(d, 0, 1)
-  // console.log(d)
   camera.dampen = d
-  // console.log(camera.dampen)
 
   fps++;
   fpsTime += elapsedTime;
@@ -162,33 +183,6 @@ function render() {
 // Render passes //////////////////////////////////////////////////////////////
 
 
-function depthPass(data) {
-  gl.bindFramebuffer(gl.FRAMEBUFFER, frameBuffer);
-
-  // Bind shader 
-  shader2.bind()
-
-  // Set attributes 
-  shader2.attributes.position.pointer()
-
-  // Set uniforms
-  shader2.uniforms.iTime = iTime
-  shader2.uniforms.iResolution = [$canvas.width/10, $canvas.height/10]
-  shader2.uniforms.iCamPos = camera.position()
-  shader2.uniforms.iCamDir = camera.view()
-
-  // Draw
-  gl.drawArrays(gl.TRIANGLES, 0, 6)
-
-  var data = new Uint8Array(($canvas.width/10) * ($canvas.height/10) * 4)
-  gl.readPixels(0, 0, $canvas.width/10, $canvas.height/10, gl.RGBA, gl.UNSIGNED_BYTE, data)
-
-  gl.bindFramebuffer(gl.FRAMEBUFFER, null)
-
-  return data
-}
-
-
 function distancePass(data) {
   gl.bindFramebuffer(gl.FRAMEBUFFER, frameBuffer);
 
@@ -207,8 +201,9 @@ function distancePass(data) {
   // Draw
   gl.drawArrays(gl.TRIANGLES, 0, 6)
 
-  var data = new Uint8Array(1 * 1 * 4)
-  gl.readPixels(0, 0, 1, 1, gl.RGBA, gl.UNSIGNED_BYTE, data)
+  if (gl.checkFramebufferStatus(gl.FRAMEBUFFER) == gl.FRAMEBUFFER_COMPLETE) {
+    gl.readPixels(0, 0, 1, 1, gl.RGBA, gl.UNSIGNED_BYTE, depth)
+  }
 
   gl.bindFramebuffer(gl.FRAMEBUFFER, null)
 
@@ -241,20 +236,24 @@ function renderPass() {
 // Events /////////////////////////////////////////////////////////////////////
 
 
-function onWindowResize( event ) {
-  var realToCSSPixels = 1//window.devicePixelRatio || 1
+function onWindowResize(event) {
+  var realToCSSPixels = quality
 
+  let w = $canvas.parentNode.clientWidth
+  let h = w * (9/16)
 
-  var displayWidth  = Math.floor($canvas.clientWidth  * realToCSSPixels)
-  var displayHeight = Math.floor($canvas.clientHeight * realToCSSPixels)
+  $canvas.style.width = w + 'px'
+  $canvas.style.height = h + 'px'
 
+  var displayWidth  = w  * realToCSSPixels
+  var displayHeight = h * realToCSSPixels
 
-  // if ($canvas.width  !== displayWidth ||
-  //     $canvas.height !== displayHeight) {
+  if ($canvas.width  !== displayWidth ||
+      $canvas.height !== displayHeight) {
 
-  //   $canvas.width  = displayWidth
-  //   $canvas.height = displayHeight
-  // }
+    $canvas.width  = displayWidth
+    $canvas.height = displayHeight
+  }
 
   gl.viewport(0, 0, gl.drawingBufferWidth, gl.drawingBufferHeight)
 

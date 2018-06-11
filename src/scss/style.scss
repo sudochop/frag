@@ -1,17 +1,15 @@
+@import '../../node_modules/bulma/bulma';
+
+$background-color: rgb(35,35,35);
+$focus-color: #6fb5f1;
+
 html,
 body {
-  background: rgb(35,35,35);
-  height: 100%;
-  color: #fff;
-  padding: 0;
-  margin: 0;
-  overflow: hidden;
+  height: 100%
 }
 
-
-
-body > div {
-  padding: 10px;
+body {
+  background: $background-color
 }
 
 canvas {
@@ -20,19 +18,80 @@ canvas {
   box-shadow: 0px 3px 5px 0px rgba(0,0,0,0.25);
 }
 
-#matrix > div {
-  height: 30px;
-  color: #000;
-  font-size: 10;
-  font-family: monospace;
+input[type=range],
+input[type=checkbox] {
+  vertical-align: middle;
 }
 
-#matrix > div div {
-  display: inline-block;
-  width: 50px;
-  height: 30px;
-  line-height: 30px;
-  background: white;
-  overflow: hidden;
-  margin: 5px;
+input[type=range] {
+  -webkit-appearance: none;
+  background: none;
+  height: 8px;
+
+  $height: 8px;
+
+  &::-webkit-slider-runnable-track {
+    height: $height;
+    background: darken($background-color, 5%);
+    border: 1px solid lighten($background-color, 5%);
+    border-radius: 3px;
+  }
+
+  &::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    margin-top: (-$height/2)+1;
+    border-radius: 50%;
+    width: 12px;
+    height: 12px;
+    background: lighten($background-color, 20%);
+    border: 1px solid lighten($background-color, 25%);
+    box-shadow: 0px 1px 3px 0px rgba(0,0,0,0.25);
+    cursor: pointer;
+  }
+
+  &:focus {
+    outline: none;
+  }
+
+  &:focus::-webkit-slider-thumb {
+    box-shadow: 0 0 0 1pt $focus-color;
+  }
+}
+
+input[type=checkbox] {
+  -webkit-appearance: none;
+  width: 14px;
+  height: 14px;
+  background: darken($background-color, 5%);
+  border: 1px solid lighten($background-color, 5%);
+  border-radius: 3px;
+  cursor: pointer;
+
+  &:checked {
+    background: darken($focus-color, 20%);
+    border: 1px solid lighten($background-color, 25%);
+  }
+
+  &:focus {
+    outline: none;
+    box-shadow: 0 0 0 1pt $focus-color;
+  }
+}
+
+div.checkbox {
+  position: relative;
+
+  input[type=checkbox]:checked:after {
+    content: '✔';
+    position: absolute;
+    top: 2px;
+    left: 3px;
+    color: #fff;
+    text-shadow: 0px 1px 3px rgba(0,0,0,0.25);
+  }
+}
+
+label > input,
+label > .checkbox {
+  margin-left: 5px;
 }
